@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 This is the first line from main branch.
+=======
+This is the first line from conflict-branch.
+>>>>>>> conflict-branch
