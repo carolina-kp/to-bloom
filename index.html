@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>To Bloom</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#fdf8f2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="To Bloom">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+<!-- ── AUTH OVERLAY ─────────────────────────────────────────────── -->
+<div id="auth-overlay" class="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-logo">To <span class="bloom-word">Bloom</span></div>
+    <p class="auth-tagline">your study companion 🌸</p>
+
+    <div id="auth-login-view">
+      <h2 class="auth-heading">welcome back</h2>
+      <input type="email"    id="login-email"    class="auth-input" placeholder="email address" autocomplete="email">
+      <input type="password" id="login-password" class="auth-input" placeholder="password" autocomplete="current-password">
+      <div id="auth-error" class="auth-error"></div>
+      <button id="login-btn"    class="auth-btn primary">sign in</button>
+      <div class="auth-or">or</div>
+      <button id="guest-btn"    class="auth-btn secondary">continue as guest</button>
+      <button id="goto-signup"  class="auth-switch">no account? sign up →</button>
+    </div>
+
+    <div id="auth-signup-view" style="display:none">
+      <h2 class="auth-heading">create account</h2>
+      <input type="email"    id="signup-email"   class="auth-input" placeholder="email address" autocomplete="email">
+      <input type="password" id="signup-pass"    class="auth-input" placeholder="password (min 6 chars)" autocomplete="new-password">
+      <input type="password" id="signup-confirm" class="auth-input" placeholder="confirm password" autocomplete="new-password">
+      <div id="auth-error-2" class="auth-error"></div>
+      <button id="signup-btn"   class="auth-btn primary">create account</button>
+      <div class="auth-or">or</div>
+      <button id="guest-btn-2"  class="auth-btn secondary">continue as guest</button>
+      <button id="goto-login"   class="auth-switch">have an account? sign in →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SYNC BAR + OFFLINE ────────────────────────────────────────── -->
+<div class="sync-bar" id="sync-bar"></div>
+<div class="offline-badge" id="offline-badge">📴 offline</div>
+
+<!-- ── TOP NAV ──────────────────────────────────────────────────── -->
+<nav id="topbar">
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger" aria-label="Menu">&#9776;</button>
+    <a href="#home" class="nav-logo">To <span class="bloom-word">Bloom</span></a>
+    <span class="sync-dot" id="sync-dot"></span>
+  </div>
+  <div class="nav-links" id="nav-links">
+    <a href="#home"      class="nav-link" data-page="home">🌸 Home</a>
+    <a href="#timetable" class="nav-link" data-page="timetable">📅 Timetable</a>
+    <a href="#grades"    class="nav-link" data-page="grades">📝 Grades</a>
+    <a href="#budget"    class="nav-link" data-page="budget">💰 Budget</a>
+    <a href="#resources" class="nav-link" data-page="resources">📚 Resources</a>
+    <a href="#goals"     class="nav-link" data-page="goals">🎯 Goals</a>
+    <a href="#wellness"  class="nav-link" data-page="wellness">🌿 Wellness</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user-label" id="nav-user-label"></span>
+    <a href="#profile" class="nav-profile" id="nav-profile-btn" title="Profile">👤</a>
+  </div>
+</nav>
+
+<!-- ── MOBILE DRAWER ────────────────────────────────────────────── -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-top">
+    <span class="drawer-logo">To <span class="bloom-word">Bloom</span></span>
+    <button class="drawer-close" id="drawer-close">✕</button>
+  </div>
+  <nav class="drawer-nav">
+    <a href="#home"      class="drawer-link" data-page="home">🌸 Home</a>
+    <a href="#timetable" class="drawer-link" data-page="timetable">📅 Timetable</a>
+    <a href="#grades"    class="drawer-link" data-page="grades">📝 Grades</a>
+    <a href="#budget"    class="drawer-link" data-page="budget">💰 Budget</a>
+    <a href="#resources" class="drawer-link" data-page="resources">📚 Resources</a>
+    <a href="#goals"     class="drawer-link" data-page="goals">🎯 Goals</a>
+    <a href="#wellness"  class="drawer-link" data-page="wellness">🌿 Wellness</a>
+    <a href="#profile"   class="drawer-link" data-page="profile">👤 Profile</a>
+  </nav>
+  <div class="drawer-footer">
+    <div class="drawer-user" id="drawer-user"></div>
+    <button class="drawer-signout" id="drawer-signout">sign out</button>
+  </div>
+</aside>
+
+<!-- ── MAIN APP ─────────────────────────────────────────────────── -->
+<main id="app">
+
+  <!-- HOME -->
+  <section id="page-home" class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Home</h1>
+        <div id="home-date" class="home-date"></div>
+      </div>
+      <button id="share-btn" class="btn-ghost">🔗 share list</button>
+    </div>
+
+    <div class="install-banner" id="install-banner">
+      <span>📱</span>
+      <p><strong>Install To Bloom</strong> — add to your home screen!</p>
+      <button id="install-btn" class="install-action">Install</button>
+      <button class="dismiss-x" id="install-dismiss">✕</button>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-pill"><div class="stat-dot" style="background:var(--pink-deep)"></div><span class="stat-label">urgent</span><span class="stat-num" id="stat-urgent">0</span></div>
+      <div class="stat-pill"><div class="stat-dot" style="background:var(--sky-deep)"></div><span class="stat-label">to do</span><span class="stat-num" id="stat-todo">0</span></div>
+      <div class="stat-pill"><div class="stat-dot" style="background:var(--mint-deep)"></div><span class="stat-label">done today</span><span class="stat-num" id="stat-done">0</span></div>
+      <div class="stat-pill"><div class="stat-dot" style="background:var(--peach-deep)"></div><span class="stat-label">this week</span><span class="stat-num" id="stat-week">0</span></div>
+    </div>
+
+    <div class="home-grid">
+      <!-- Sidebar -->
+      <aside class="home-sidebar">
+        <div class="card">
+          <div class="mini-cal-header">
+            <button class="cal-nav" id="cal-prev">‹</button>
+            <span id="cal-month-label"></span>
+            <button class="cal-nav" id="cal-next">›</button>
+          </div>
+          <div class="mini-cal-grid" id="mini-cal"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">courses 📚</div>
+          <div id="course-list"></div>
+          <button class="dashed-btn" id="add-course-btn">+ add course</button>
+        </div>
+        <div class="card" id="goals-widget" style="display:none">
+          <div class="card-title">top goals 🎯</div>
+          <div id="goals-widget-list"></div>
+          <a href="#goals" class="card-link" id="goals-widget-link">view all →</a>
+        </div>
+      </aside>
+
+      <!-- Main tasks -->
+      <div class="home-main">
+        <div class="tabs-row">
+          <div class="view-tabs">
+            <button class="tab-btn active" data-view="day">Today</button>
+            <button class="tab-btn" data-view="week">Week</button>
+            <button class="tab-btn" data-view="month">Month</button>
+          </div>
+        </div>
+
+        <div class="card add-task-card">
+          <div class="add-task-row">
+            <input type="text" id="task-input" class="task-input" placeholder="add a new task…">
+            <button id="add-btn" class="add-btn">+ add</button>
+          </div>
+          <div class="add-options">
+            <select id="task-course" class="option-select"></select>
+            <select id="task-priority" class="option-select">
+              <option value="normal">normal</option>
+              <option value="urgent">🔴 urgent</option>
+              <option value="low">🟢 low</option>
+            </select>
+            <input type="date" id="task-due" class="date-input">
+          </div>
+        </div>
+
+        <div id="view-day"   class="view-panel active"></div>
+        <div id="view-week"  class="view-panel">
+          <div class="week-nav">
+            <button class="week-nav-btn" id="week-prev">‹ prev</button>
+            <span id="week-range-label" class="week-range-label"></span>
+            <button class="week-nav-btn" id="week-next">next ›</button>
+            <button class="week-nav-btn" id="week-today">today</button>
+          </div>
+          <div class="week-grid" id="week-grid"></div>
+        </div>
+        <div id="view-month" class="view-panel">
+          <div class="week-nav">
+            <button class="week-nav-btn" id="month-prev">‹ prev</button>
+            <span id="month-label" class="week-range-label"></span>
+            <button class="week-nav-btn" id="month-next">next ›</button>
+          </div>
+          <div class="card month-card">
+            <div class="month-day-names" id="month-day-names"></div>
+            <div class="month-grid"      id="month-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Widget panel -->
+    <div class="widget-panel-wrap">
+      <button class="widget-toggle" id="widget-toggle">
+        <span>✨ widgets</span><span id="widget-chevron">▾</span>
+      </button>
+      <div class="widget-grid" id="widget-grid">
+        <div class="widget card" id="widget-weather">
+          <div class="widget-title">🌤 weather</div>
+          <div id="weather-content"><div class="widget-loading">locating…</div></div>
+        </div>
+        <div class="widget card" id="widget-quote">
+          <div class="widget-title">💭 thought of the day</div>
+          <div id="quote-content"></div>
+        </div>
+        <div class="widget card" id="widget-pomodoro">
+          <div class="widget-title">🍅 pomodoro <button class="pomo-settings-btn" id="pomo-settings-btn">⚙</button></div>
+          <div id="pomodoro-content"></div>
+        </div>
+        <div class="widget card" id="widget-progress">
+          <div class="widget-title">📊 this week</div>
+          <div id="progress-content"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMETABLE -->
+  <section id="page-timetable" class="page">
+    <div class="page-header">
+      <h1 class="page-title">📅 Timetable</h1>
+      <div class="btn-group">
+        <button class="btn-primary" id="add-slot-btn">+ add class</button>
+        <button class="btn-secondary" id="import-btn">📋 paste import</button>
+      </div>
+    </div>
+    <div id="timetable-container"></div>
+  </section>
+
+  <!-- GRADES -->
+  <section id="page-grades" class="page">
+    <div class="page-header">
+      <h1 class="page-title">📝 Grades</h1>
+      <button class="btn-primary" id="add-grade-btn">+ add grade</button>
+    </div>
+    <div id="grades-container"></div>
+  </section>
+
+  <!-- BUDGET -->
+  <section id="page-budget" class="page">
+    <div class="page-header">
+      <h1 class="page-title">💰 Budget</h1>
+      <div class="btn-group">
+        <button class="week-nav-btn" id="budget-prev">‹</button>
+        <span id="budget-month-label" class="week-range-label"></span>
+        <button class="week-nav-btn" id="budget-next">›</button>
+        <button class="btn-primary"   id="add-entry-btn">+ add</button>
+        <button class="btn-secondary" id="add-bgoal-btn">🎯 savings goal</button>
+      </div>
+    </div>
+    <div id="budget-container"></div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section id="page-resources" class="page">
+    <div class="page-header">
+      <h1 class="page-title">📚 Resources</h1>
+      <button class="btn-primary" id="add-resource-btn">+ add resource</button>
+    </div>
+    <div id="resource-filters"></div>
+    <div id="resources-container"></div>
+  </section>
+
+  <!-- GOALS -->
+  <section id="page-goals" class="page">
+    <div class="page-header">
+      <h1 class="page-title">🎯 Goals</h1>
+      <button class="btn-primary" id="add-goal-btn">+ add goal</button>
+    </div>
+    <div id="goals-container"></div>
+  </section>
+
+  <!-- WELLNESS -->
+  <section id="page-wellness" class="page">
+    <div class="page-header">
+      <h1 class="page-title">🌿 Wellness</h1>
+      <button class="btn-secondary" id="water-notif-btn">💧 water reminders</button>
+    </div>
+    <div id="wellness-container"></div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="page-profile" class="page">
+    <div class="page-header">
+      <h1 class="page-title">👤 Profile</h1>
+    </div>
+    <div id="profile-container"></div>
+  </section>
+
+</main>
+
+<!-- ── TOAST ─────────────────────────────────────────────────────── -->
+<div class="notif" id="notif"><span id="notif-text"></span></div>
+
+<!-- ── MODALS ────────────────────────────────────────────────────── -->
+
+<div class="modal-overlay" id="share-modal">
+  <div class="modal">
+    <div class="modal-title">share your list 🌸</div>
+    <p class="modal-sub">anyone with this link can view your tasks</p>
+    <div class="share-link-box" id="share-link-text"></div>
+    <button class="btn-primary" id="copy-link-btn">copy link</button>
+    <button class="modal-close" data-close="share-modal">close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="course-modal">
+  <div class="modal">
+    <div class="modal-title">add a course ✏️</div>
+    <input type="text" id="course-name-input" class="form-input" placeholder="e.g. Psychology 101">
+    <div class="form-label">pick a colour</div>
+    <div class="color-swatches" id="course-color-swatches"></div>
+    <button class="btn-primary" id="save-course-btn">add course</button>
+    <button class="modal-close" data-close="course-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="slot-modal">
+  <div class="modal">
+    <div class="modal-title">add class 📅</div>
+    <select id="slot-day" class="form-input">
+      <option value="0">Monday</option><option value="1">Tuesday</option>
+      <option value="2">Wednesday</option><option value="3">Thursday</option>
+      <option value="4">Friday</option><option value="5">Saturday</option>
+      <option value="6">Sunday</option>
+    </select>
+    <div class="two-col">
+      <input type="time" id="slot-start" class="form-input" value="09:00">
+      <input type="time" id="slot-end"   class="form-input" value="10:30">
+    </div>
+    <input type="text" id="slot-subject" class="form-input" placeholder="Subject">
+    <input type="text" id="slot-room"    class="form-input" placeholder="Room / location (optional)">
+    <div class="form-label">colour</div>
+    <div class="color-swatches" id="slot-color-swatches"></div>
+    <button class="btn-primary" id="save-slot-btn">save</button>
+    <button class="modal-close" data-close="slot-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="import-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">📋 paste timetable</div>
+    <p class="modal-sub">paste your timetable text — we auto-detect the format</p>
+    <textarea id="import-text" class="form-input" rows="8" style="resize:vertical;min-height:140px"
+      placeholder="Monday 09:00-10:30 Maths Room 201&#10;Tue 14:00-15:30 Psychology LT3&#10;Wed 11:00 Computing Lab 4"></textarea>
+    <div id="import-preview" class="import-preview"></div>
+    <button class="btn-primary"  id="do-import-btn">import</button>
+    <button class="modal-close" data-close="import-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="grade-modal">
+  <div class="modal">
+    <div class="modal-title">add grade 📝</div>
+    <input type="text"   id="grade-course"     class="form-input" placeholder="Course name">
+    <input type="text"   id="grade-assessment" class="form-input" placeholder="Assessment name (e.g. Midterm)">
+    <div class="two-col">
+      <div><div class="form-label">Grade (%)</div><input type="number" id="grade-score"  class="form-input" min="0" max="100" placeholder="85"></div>
+      <div><div class="form-label">Weight (%)</div><input type="number" id="grade-weight" class="form-input" min="0" max="100" placeholder="30"></div>
+    </div>
+    <div class="form-label">Exam / due date (optional)</div>
+    <input type="date" id="grade-date" class="form-input">
+    <button class="btn-primary" id="save-grade-btn">save grade</button>
+    <button class="modal-close" data-close="grade-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="budget-modal">
+  <div class="modal">
+    <div class="modal-title" id="budget-modal-title">add entry 💰</div>
+    <div class="type-toggle">
+      <button class="type-btn active" id="btype-expense" data-btype="expense">expense</button>
+      <button class="type-btn"        id="btype-income"  data-btype="income">income</button>
+    </div>
+    <select id="budget-category" class="form-input"></select>
+    <input type="text"   id="budget-desc"   class="form-input" placeholder="Description">
+    <input type="number" id="budget-amount" class="form-input" placeholder="Amount" min="0" step="0.01">
+    <input type="date"   id="budget-date"   class="form-input">
+    <button class="btn-primary" id="save-budget-btn">save</button>
+    <button class="modal-close" data-close="budget-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="bgoal-modal">
+  <div class="modal">
+    <div class="modal-title">savings goal 💰</div>
+    <input type="text" id="bgoal-name" class="form-input" placeholder="Goal name (e.g. Emergency Fund)">
+    <div class="two-col">
+      <div><div class="form-label">Target (£)</div><input type="number" id="bgoal-target"  class="form-input" min="0" placeholder="1000"></div>
+      <div><div class="form-label">Saved (£)</div><input  type="number" id="bgoal-current" class="form-input" min="0" placeholder="0"></div>
+    </div>
+    <div class="form-label">Deadline (optional)</div>
+    <input type="date" id="bgoal-deadline" class="form-input">
+    <button class="btn-primary" id="save-bgoal-btn">save goal</button>
+    <button class="modal-close" data-close="bgoal-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="resource-modal">
+  <div class="modal">
+    <div class="modal-title">add resource 📚</div>
+    <input type="text" id="res-title"  class="form-input" placeholder="Title">
+    <input type="url"  id="res-url"    class="form-input" placeholder="URL (optional)">
+    <div class="two-col">
+      <div>
+        <div class="form-label">Type</div>
+        <select id="res-type" class="form-input">
+          <option value="link">🔗 Link</option><option value="book">📖 Book</option>
+          <option value="paper">📄 Paper</option><option value="video">🎬 Video</option>
+          <option value="other">📦 Other</option>
+        </select>
+      </div>
+      <div>
+        <div class="form-label">Course</div>
+        <input type="text" id="res-course" class="form-input" placeholder="Course (optional)">
+      </div>
+    </div>
+    <textarea id="res-notes" class="form-input" rows="2" placeholder="Notes (optional)" style="resize:vertical"></textarea>
+    <button class="btn-primary" id="save-resource-btn">add resource</button>
+    <button class="modal-close" data-close="resource-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="goal-modal">
+  <div class="modal">
+    <div class="modal-title" id="goal-modal-title">add goal 🎯</div>
+    <input type="text" id="goal-title" class="form-input" placeholder="Goal title">
+    <textarea id="goal-desc" class="form-input" rows="2" placeholder="Description (optional)" style="resize:vertical"></textarea>
+    <div class="two-col">
+      <div><div class="form-label">Current</div><input type="number" id="goal-current" class="form-input" min="0" placeholder="0"></div>
+      <div><div class="form-label">Target</div><input  type="number" id="goal-target"  class="form-input" min="1" placeholder="100"></div>
+    </div>
+    <div class="two-col">
+      <div><div class="form-label">Unit</div><input type="text" id="goal-unit" class="form-input" placeholder="% / pages / km"></div>
+      <div><div class="form-label">Deadline</div><input type="date" id="goal-deadline" class="form-input"></div>
+    </div>
+    <div class="form-label">colour</div>
+    <div class="color-swatches" id="goal-color-swatches"></div>
+    <button class="btn-primary" id="save-goal-btn">save goal</button>
+    <button class="modal-close" data-close="goal-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pomo-modal">
+  <div class="modal">
+    <div class="modal-title">⚙️ timer settings</div>
+    <div class="form-label">Work (minutes)</div>
+    <input type="number" id="pomo-work-input"  class="form-input" min="1" max="90" value="25">
+    <div class="form-label">Short break (minutes)</div>
+    <input type="number" id="pomo-short-input" class="form-input" min="1" max="30" value="5">
+    <div class="form-label">Long break (minutes)</div>
+    <input type="number" id="pomo-long-input"  class="form-input" min="1" max="60" value="15">
+    <button class="btn-primary" id="save-pomo-btn">save</button>
+    <button class="modal-close" data-close="pomo-modal">cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="change-pw-modal">
+  <div class="modal">
+    <div class="modal-title">change password</div>
+    <input type="password" id="new-pw"      class="form-input" placeholder="new password">
+    <input type="password" id="confirm-pw"  class="form-input" placeholder="confirm new password">
+    <div id="pw-error" class="auth-error"></div>
+    <button class="btn-primary" id="save-pw-btn">update password</button>
+    <button class="modal-close" data-close="change-pw-modal">cancel</button>
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
