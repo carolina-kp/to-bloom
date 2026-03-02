@@ -36,6 +36,11 @@ export async function initAuth(onReady, onSignOut) {
   supabase.auth.onAuthStateChange((_event, session) => {
     if (session?.user) {
       _setUser(session.user, false)
+      if (!appReady) {
+        // User confirmed email and was redirected back — boot the app now
+        appReady = true
+        onReady(userId, false)
+      }
     } else if (!isGuest && appReady) {
       currentUser = null
       userId      = null
