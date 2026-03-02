@@ -219,6 +219,9 @@ async function main() {
   // Auth
   await initAuth(
     async (uid, guest) => {
+      // Hide auth overlay (may have been skipped if session already existed)
+      document.getElementById('auth-overlay')?.classList.add('hidden')
+
       // Update UI labels
       const label = document.getElementById('nav-user-label')
       const drawerUser = document.getElementById('drawer-user')
