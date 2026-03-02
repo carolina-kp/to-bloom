@@ -7,8 +7,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'bloom. — study companion',
-        short_name: 'bloom.',
+        name: 'To Bloom — study companion',
+        short_name: 'To Bloom',
         description: 'Your aesthetic university task tracker',
         theme_color: '#fdf8f2',
         background_color: '#fdf8f2',
@@ -21,12 +21,17 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
-            options: { cacheName: 'google-fonts-cache', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } }
+            options: { cacheName: 'google-fonts', expiration: { maxEntries: 10, maxAgeSeconds: 31536000 } }
+          },
+          {
+            urlPattern: /^https:\/\/api\.open-meteo\.com\/.*/i,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'weather', expiration: { maxEntries: 5, maxAgeSeconds: 1800 } }
           }
         ]
       }
