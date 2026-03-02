@@ -13,27 +13,30 @@ export let userId       = null   // the string used as user_id in DB rows
 export async function initAuth(onReady, onSignOut) {
   // Check existing session first
   const { data: { session } } = await supabase.auth.getSession()
+  let appReady = false
 
   if (session?.user) {
     _setUser(session.user, false)
+    appReady = true
     onReady(userId, false)
   } else {
     // Check for saved guest id
     const gid = localStorage.getItem(GUEST_KEY)
     if (gid) {
       _setGuest(gid)
+      appReady = true
       onReady(userId, true)
     } else {
       // Show auth overlay — wait for user action
-      showAuthOverlay(onReady)
+      showAuthOverlay((...args) => { appReady = true; onReady(...args) })
     }
   }
 
-  // Listen for future auth changes
+  // Listen for future auth changes — only call onSignOut after app has initialised
   supabase.auth.onAuthStateChange((_event, session) => {
     if (session?.user) {
       _setUser(session.user, false)
-    } else if (!isGuest) {
+    } else if (!isGuest && appReady) {
       currentUser = null
       userId      = null
       setUid(null)
