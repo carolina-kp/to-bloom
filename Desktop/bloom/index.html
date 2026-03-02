@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bloom. — your study companion</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#fdf8f2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="bloom.">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fdf8f2;
+    --pink: #f5c6c6;
+    --pink-deep: #e8a0a0;
+    --mint: #c6e8d8;
+    --mint-deep: #8fcfb0;
+    --lavender: #d8c6e8;
+    --lavender-deep: #b89fd4;
+    --peach: #f5dcc6;
+    --peach-deep: #e8b88a;
+    --sky: #c6daf5;
+    --sky-deep: #8fb8e8;
+    --yellow: #f5edc6;
+    --yellow-deep: #e8d08a;
+    --text: #3d3530;
+    --text-light: #8a7d76;
+    --text-lighter: #bbb0aa;
+    --border: rgba(61,53,48,0.08);
+    --shadow: 0 4px 24px rgba(61,53,48,0.08);
+    --shadow-sm: 0 2px 8px rgba(61,53,48,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(245,198,198,0.3) 0%, transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(216,198,232,0.25) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(198,232,216,0.15) 0%, transparent 60%);
+  }
+
+  /* SYNC INDICATOR */
+  .sync-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--pink-deep), var(--lavender-deep), var(--mint-deep));
+    background-size: 200% 100%;
+    animation: syncPulse 1.5s linear infinite;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .sync-bar.visible { opacity: 1; }
+  @keyframes syncPulse {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* OFFLINE BADGE */
+  .offline-badge {
+    position: fixed;
+    top: 12px; right: 12px;
+    background: #f5dcc6;
+    color: var(--text);
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    z-index: 999;
+    display: none;
+    align-items: center;
+    gap: 5px;
+  }
+  .offline-badge.show { display: flex; }
+
+  .header {
+    padding: 28px 32px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--pink-deep); font-style: italic; }
+
+  .sync-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--mint-deep);
+    display: inline-block;
+    margin-left: 8px;
+    vertical-align: middle;
+    transition: background 0.3s;
+  }
+  .sync-dot.syncing { background: var(--peach-deep); animation: blink 1s infinite; }
+  .sync-dot.offline { background: var(--text-lighter); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .date-display { font-size: 0.85rem; color: var(--text-light); font-weight: 300; text-align: right; }
+  .date-display strong { display: block; font-size: 1rem; font-weight: 500; color: var(--text); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 32px 48px; }
+
+  .view-tabs {
+    display: flex; gap: 8px;
+    margin-bottom: 28px;
+    background: white; padding: 6px; border-radius: 16px;
+    width: fit-content; box-shadow: var(--shadow-sm);
+  }
+  .tab-btn {
+    padding: 8px 22px; border-radius: 12px; border: none;
+    background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500; color: var(--text-light);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .tab-btn.active { background: var(--pink); color: var(--text); }
+  .tab-btn:hover:not(.active) { background: var(--cream); }
+
+  .stats-bar { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat-pill {
+    background: white; border-radius: 14px; padding: 10px 18px;
+    box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 8px; font-size: 0.85rem;
+  }
+  .stat-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .stat-label { color: var(--text-light); }
+  .stat-num { font-weight: 600; font-size: 1rem; }
+
+  .main-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+
+  @media (max-width: 768px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .container { padding: 16px; }
+    .header { padding: 20px 16px 0; }
+  }
+
+  .sidebar { display: flex; flex-direction: column; gap: 18px; }
+
+  .card { background: white; border-radius: 20px; padding: 20px; box-shadow: var(--shadow-sm); }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
+
+  .mini-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .mini-cal-header span { font-weight: 500; font-size: 0.9rem; }
+  .cal-nav {
+    background: none; border: none; cursor: pointer; color: var(--text-light);
+    font-size: 1rem; padding: 2px 6px; border-radius: 6px; transition: background 0.15s;
+  }
+  .cal-nav:hover { background: var(--cream); }
+  .mini-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+  .cal-day-name { font-size: 0.7rem; color: var(--text-lighter); font-weight: 500; padding: 4px 0; }
+  .cal-day {
+    font-size: 0.8rem; padding: 5px 0; border-radius: 8px; cursor: pointer;
+    transition: all 0.15s; color: var(--text); position: relative;
+  }
+  .cal-day:hover { background: var(--cream); }
+  .cal-day.today { background: var(--pink); font-weight: 600; }
+  .cal-day.other-month { color: var(--text-lighter); }
+  .cal-day.has-tasks::after {
+    content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%; background: var(--lavender-deep);
+  }
+
+  .course-list { display: flex; flex-direction: column; gap: 8px; }
+  .course-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    border-radius: 10px; cursor: pointer; transition: background 0.15s; font-size: 0.88rem;
+  }
+  .course-item:hover { background: var(--cream); }
+  .course-item.active { background: var(--cream); font-weight: 500; }
+  .course-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+  .course-name { flex: 1; }
+  .course-count { font-size: 0.75rem; color: var(--text-lighter); background: var(--cream); padding: 1px 7px; border-radius: 8px; }
+  .add-course-btn {
+    width: 100%; padding: 8px; border: 2px dashed var(--border); border-radius: 10px;
+    background: none; color: var(--text-lighter); font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; cursor: pointer; margin-top: 4px; transition: all 0.15s;
+  }
+  .add-course-btn:hover { border-color: var(--pink-deep); color: var(--pink-deep); }
+
+  .main-content { display: flex; flex-direction: column; gap: 20px; }
+
+  .add-task-card { background: white; border-radius: 20px; padding: 20px; box-shadow: var(--shadow-sm); }
+  .add-task-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .task-input {
+    flex: 1; min-width: 200px; border: 2px solid transparent; background: var(--cream);
+    border-radius: 12px; padding: 10px 16px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; color: var(--text); outline: none; transition: all 0.2s;
+  }
+  .task-input:focus { border-color: var(--pink-deep); background: white; }
+  .task-input::placeholder { color: var(--text-lighter); }
+  .add-options { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .option-select {
+    border: 2px solid transparent; background: var(--cream); border-radius: 10px;
+    padding: 7px 12px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    color: var(--text); outline: none; cursor: pointer; transition: border-color 0.2s;
+  }
+  .option-select:focus { border-color: var(--pink-deep); }
+  .date-input {
+    border: 2px solid transparent; background: var(--cream); border-radius: 10px;
+    padding: 7px 12px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    color: var(--text); outline: none; transition: border-color 0.2s;
+  }
+  .date-input:focus { border-color: var(--pink-deep); }
+  .add-btn {
+    background: var(--pink-deep); color: white; border: none; border-radius: 12px;
+    padding: 10px 22px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    font-size: 0.9rem; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .add-btn:hover { background: #d98888; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(232,160,160,0.4); }
+  .add-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .share-btn {
+    background: var(--lavender); color: var(--text); border: none; border-radius: 12px;
+    padding: 10px 18px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .share-btn:hover { background: var(--lavender-deep); }
+
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+
+  .day-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  .day-label { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; }
+  .day-sub { font-size: 0.8rem; color: var(--text-lighter); font-weight: 300; }
+  .task-count-badge {
+    background: var(--cream); border-radius: 8px; padding: 2px 10px;
+    font-size: 0.75rem; color: var(--text-light); margin-left: auto;
+  }
+
+  .task-list { display: flex; flex-direction: column; gap: 8px; }
+  .task-item {
+    background: white; border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 12px; transition: all 0.2s;
+    border-left: 4px solid transparent;
+  }
+  .task-item:hover { transform: translateX(2px); box-shadow: var(--shadow); }
+  .task-item.done { opacity: 0.55; }
+  .task-item.done .task-text { text-decoration: line-through; color: var(--text-lighter); }
+  .task-item.urgent { border-left-color: var(--pink-deep); }
+  .task-item.normal { border-left-color: var(--sky-deep); }
+  .task-item.low { border-left-color: var(--mint-deep); }
+
+  .task-check {
+    width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border);
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; transition: all 0.2s; background: white;
+  }
+  .task-check:hover { border-color: var(--pink-deep); }
+  .task-check.checked { background: var(--pink-deep); border-color: var(--pink-deep); color: white; font-size: 0.7rem; }
+
+  .task-body { flex: 1; min-width: 0; }
+  .task-text { font-size: 0.92rem; font-weight: 400; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+  .course-tag { font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 500; }
+  .priority-tag { font-size: 0.7rem; color: var(--text-lighter); font-weight: 300; }
+  .due-tag { font-size: 0.72rem; color: var(--text-lighter); display: flex; align-items: center; gap: 3px; }
+  .due-tag.overdue { color: var(--pink-deep); font-weight: 500; }
+
+  .task-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+  .task-item:hover .task-actions { opacity: 1; }
+  .action-btn {
+    width: 28px; height: 28px; border-radius: 8px; border: none; background: var(--cream);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; color: var(--text-light); transition: all 0.15s;
+  }
+  .action-btn:hover { background: var(--pink); }
+  .action-btn.delete:hover { background: #ffd4d4; }
+
+  .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+  @media (max-width: 900px) { .week-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { .week-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .week-col {
+    background: white; border-radius: 16px; padding: 14px 12px;
+    box-shadow: var(--shadow-sm); min-height: 140px;
+  }
+  .week-col-header { text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .week-day-name { font-size: 0.72rem; font-weight: 500; color: var(--text-lighter); text-transform: uppercase; letter-spacing: 0.5px; }
+  .week-day-num { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; line-height: 1.2; }
+  .week-col.today-col .week-day-num { color: var(--pink-deep); }
+  .week-col.today-col { border: 2px solid var(--pink); }
+
+  .week-task-mini {
+    font-size: 0.72rem; padding: 4px 7px; border-radius: 6px; margin-bottom: 4px;
+    cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity 0.15s;
+  }
+  .week-task-mini:hover { opacity: 0.7; }
+  .week-task-mini.done { text-decoration: line-through; opacity: 0.4; }
+
+  .month-grid-big { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .month-day-name-big {
+    text-align: center; font-size: 0.75rem; font-weight: 500;
+    color: var(--text-lighter); text-transform: uppercase; letter-spacing: 0.4px; padding: 6px 0;
+  }
+  .month-cell {
+    background: white; border-radius: 12px; padding: 8px; min-height: 80px;
+    box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.15s; border: 2px solid transparent;
+  }
+  .month-cell:hover { border-color: var(--pink); }
+  .month-cell.today-cell { border-color: var(--pink-deep); }
+  .month-cell.other-month-cell { opacity: 0.4; }
+  .month-cell-num { font-size: 0.82rem; font-weight: 500; margin-bottom: 4px; color: var(--text-light); }
+  .month-cell.today-cell .month-cell-num { color: var(--pink-deep); font-weight: 700; }
+  .month-task-dot { font-size: 0.68rem; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .month-more { font-size: 0.65rem; color: var(--text-lighter); margin-top: 2px; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-lighter); }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .empty-state p { font-size: 0.88rem; font-style: italic; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(61,53,48,0.2); backdrop-filter: blur(4px);
+    z-index: 100; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: 24px; padding: 32px; max-width: 420px;
+    width: 90%; box-shadow: 0 20px 60px rgba(61,53,48,0.15); animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 6px; }
+  .modal-sub { font-size: 0.85rem; color: var(--text-light); margin-bottom: 20px; }
+  .share-link-box {
+    background: var(--cream); border-radius: 12px; padding: 12px 16px; font-size: 0.82rem;
+    color: var(--text-light); word-break: break-all; margin-bottom: 16px;
+    border: 1px solid var(--border); position: relative;
+  }
+  .copy-link-btn {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: var(--pink-deep); color: white; border: none; border-radius: 8px;
+    padding: 4px 12px; font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+  .modal-close {
+    width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 12px;
+    background: none; font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    color: var(--text-light); cursor: pointer; transition: all 0.15s;
+  }
+  .modal-close:hover { border-color: var(--text-light); }
+
+  .course-modal-form { display: flex; flex-direction: column; gap: 12px; }
+  .form-input {
+    border: 2px solid var(--border); border-radius: 12px; padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text);
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--pink-deep); }
+  .color-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-swatch {
+    width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+    border: 3px solid transparent; transition: border-color 0.15s;
+  }
+  .color-swatch.selected { border-color: var(--text); }
+  .form-btn {
+    background: var(--pink-deep); color: white; border: none; border-radius: 12px;
+    padding: 11px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: all 0.2s;
+  }
+  .form-btn:hover { background: #d98888; }
+
+  .week-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .week-nav-btn {
+    background: white; border: none; border-radius: 10px; padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer;
+    box-shadow: var(--shadow-sm); transition: all 0.15s;
+  }
+  .week-nav-btn:hover { background: var(--pink); }
+  .week-range-label { font-size: 0.88rem; color: var(--text-light); font-weight: 300; }
+
+  .notif {
+    position: fixed; bottom: 24px; right: 24px; background: white; border-radius: 14px;
+    padding: 12px 20px; box-shadow: 0 8px 32px rgba(61,53,48,0.15); font-size: 0.88rem;
+    color: var(--text); display: flex; align-items: center; gap: 8px;
+    transform: translateY(80px); opacity: 0; transition: all 0.3s ease; z-index: 200;
+  }
+  .notif.show { transform: translateY(0); opacity: 1; }
+
+  /* INSTALL PROMPT */
+  .install-banner {
+    background: linear-gradient(135deg, var(--pink), var(--lavender));
+    border-radius: 16px; padding: 14px 18px; margin-bottom: 16px;
+    display: none; align-items: center; gap: 12px; box-shadow: var(--shadow-sm);
+  }
+  .install-banner.show { display: flex; }
+  .install-banner p { flex: 1; font-size: 0.88rem; }
+  .install-btn {
+    background: white; border: none; border-radius: 10px; padding: 7px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+    cursor: pointer; white-space: nowrap; transition: all 0.15s;
+  }
+  .install-btn:hover { transform: translateY(-1px); }
+  .install-dismiss { background: none; border: none; cursor: pointer; color: var(--text-light); font-size: 1.1rem; }
+</style>
+</head>
+<body>
+
+<div class="sync-bar" id="sync-bar"></div>
+<div class="offline-badge" id="offline-badge">📴 offline</div>
+
+<div class="header">
+  <div class="logo">bloom<span>.</span> <span class="sync-dot" id="sync-dot" title="synced"></span></div>
+  <div class="header-right">
+    <div class="date-display">
+      <strong id="current-date-display"></strong>
+      <span id="current-time-display"></span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- INSTALL BANNER -->
+  <div class="install-banner" id="install-banner">
+    <span style="font-size:1.2rem">📱</span>
+    <p><strong>Install bloom.</strong> — add to your home screen for quick access!</p>
+    <button class="install-btn" id="install-btn">Install</button>
+    <button class="install-dismiss" onclick="document.getElementById('install-banner').classList.remove('show')">×</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-pill">
+      <div class="stat-dot" style="background: var(--pink-deep)"></div>
+      <span class="stat-label">urgent</span>
+      <span class="stat-num" id="stat-urgent">0</span>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-dot" style="background: var(--sky-deep)"></div>
+      <span class="stat-label">in progress</span>
+      <span class="stat-num" id="stat-todo">0</span>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-dot" style="background: var(--mint-deep)"></div>
+      <span class="stat-label">done today</span>
+      <span class="stat-num" id="stat-done">0</span>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-dot" style="background: var(--peach-deep)"></div>
+      <span class="stat-label">this week</span>
+      <span class="stat-num" id="stat-week">0</span>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="sidebar">
+      <div class="card">
+        <div class="mini-cal-header">
+          <button class="cal-nav" onclick="navMonth(-1)">‹</button>
+          <span id="cal-month-label"></span>
+          <button class="cal-nav" onclick="navMonth(1)">›</button>
+        </div>
+        <div class="mini-cal-grid" id="mini-cal"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">courses 📚</div>
+        <div class="course-list" id="course-list"></div>
+        <button class="add-course-btn" onclick="openCourseModal()">+ add course</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div class="view-tabs">
+          <button class="tab-btn active" onclick="switchView('day', this)">Today</button>
+          <button class="tab-btn" onclick="switchView('week', this)">Week</button>
+          <button class="tab-btn" onclick="switchView('month', this)">Month</button>
+        </div>
+        <button class="share-btn" onclick="openShareModal()">🔗 share list</button>
+      </div>
+
+      <div class="add-task-card">
+        <div class="add-task-row">
+          <input type="text" class="task-input" id="task-input" placeholder="add a new task..." onkeydown="if(event.key==='Enter') addTask()">
+          <button class="add-btn" id="add-btn" onclick="addTask()">+ add</button>
+        </div>
+        <div class="add-options">
+          <select class="option-select" id="task-course"><option value="">no course</option></select>
+          <select class="option-select" id="task-priority">
+            <option value="normal">normal</option>
+            <option value="urgent">🔴 urgent</option>
+            <option value="low">🟢 low priority</option>
+          </select>
+          <input type="date" class="date-input" id="task-due">
+        </div>
+      </div>
+
+      <div class="view-panel active" id="view-day"><div id="day-tasks-container"></div></div>
+      <div class="view-panel" id="view-week">
+        <div class="week-nav">
+          <button class="week-nav-btn" onclick="navWeek(-1)">‹ prev</button>
+          <span class="week-range-label" id="week-range-label"></span>
+          <button class="week-nav-btn" onclick="navWeek(1)">next ›</button>
+          <button class="week-nav-btn" onclick="weekOffset=0; renderWeekView()">today</button>
+        </div>
+        <div class="week-grid" id="week-grid"></div>
+      </div>
+      <div class="view-panel" id="view-month">
+        <div class="week-nav">
+          <button class="week-nav-btn" onclick="navMonth2(-1)">‹ prev</button>
+          <span class="week-range-label" id="month-label"></span>
+          <button class="week-nav-btn" onclick="navMonth2(1)">next ›</button>
+        </div>
+        <div style="background:white; border-radius:20px; padding:16px; box-shadow:var(--shadow-sm);">
+          <div class="month-grid-big" id="month-cal-names"></div>
+          <div class="month-grid-big" id="month-cal-grid" style="margin-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal">
+    <div class="modal-title">share your list 🌸</div>
+    <div class="modal-sub">anyone with this link can view your tasks in real time</div>
+    <div class="share-link-box" id="share-link-text">
+      loading...
+      <button class="copy-link-btn" onclick="copyLink()">copy</button>
+    </div>
+    <button class="modal-close" onclick="closeModal('share-modal')">close</button>
+  </div>
+</div>
+
+<!-- COURSE MODAL -->
+<div class="modal-overlay" id="course-modal">
+  <div class="modal">
+    <div class="modal-title">add a course ✏️</div>
+    <div class="modal-sub">tag your tasks by subject</div>
+    <div class="course-modal-form">
+      <input type="text" class="form-input" id="course-name-input" placeholder="e.g. Psychology 101">
+      <div>
+        <div style="font-size:0.82rem; color:var(--text-light); margin-bottom:8px;">pick a colour</div>
+        <div class="color-swatches" id="color-swatches"></div>
+      </div>
+      <button class="form-btn" onclick="addCourse()">add course</button>
+      <button class="modal-close" onclick="closeModal('course-modal')">cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"><span id="notif-text"></span></div>
+
+<script type="module">
+import { createClient } from '@supabase/supabase-js'
+
+// ---- SUPABASE SETUP ----
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// ---- STATE ----
+const COLORS = [
+  { bg: '#f5c6c6' }, { bg: '#c6daf5' }, { bg: '#c6e8d8' }, { bg: '#d8c6e8' },
+  { bg: '#f5dcc6' }, { bg: '#f5edc6' }, { bg: '#e8c6d8' }, { bg: '#c6e8e8' },
+]
+let tasks = []
+let courses = []
+let selectedCourse = 'all'
+let selectedColor = COLORS[0]
+let weekOffset = 0
+let calDisplayDate = new Date()
+let monthViewDate = new Date()
+let isSyncing = false
+
+function genId() { return crypto.randomUUID() }
+function fmtDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
+}
+function parseDate(s) {
+  if (!s) return null
+  const [y,m,d] = s.split('-').map(Number)
+  return new Date(y, m-1, d)
+}
+
+// ---- SYNC STATUS ----
+function setSyncing(v) {
+  isSyncing = v
+  document.getElementById('sync-bar').classList.toggle('visible', v)
+  document.getElementById('sync-dot').className = 'sync-dot' + (v ? ' syncing' : '')
+}
+
+// ---- OFFLINE DETECTION ----
+window.addEventListener('online', () => {
+  document.getElementById('offline-badge').classList.remove('show')
+  loadAll()
+})
+window.addEventListener('offline', () => {
+  document.getElementById('offline-badge').classList.add('show')
+  document.getElementById('sync-dot').className = 'sync-dot offline'
+})
+
+// ---- LOAD DATA ----
+async function loadAll() {
+  setSyncing(true)
+  try {
+    const [{ data: t }, { data: c }] = await Promise.all([
+      supabase.from('tasks').select('*').order('created_at'),
+      supabase.from('courses').select('*').order('created_at'),
+    ])
+    tasks = t || []
+    courses = c || []
+
+    // Seed defaults if empty
+    if (courses.length === 0) {
+      const defaults = [
+        { id: genId(), name: 'Mathematics', color: '#f5c6c6' },
+        { id: genId(), name: 'Psychology', color: '#c6daf5' },
+        { id: genId(), name: 'Literature', color: '#c6e8d8' },
+      ]
+      await supabase.from('courses').insert(defaults)
+      courses = defaults
+    }
+    if (tasks.length === 0) {
+      const today = fmtDate(new Date())
+      const tomorrow = fmtDate(new Date(Date.now() + 86400000))
+      const defaults = [
+        { id: genId(), text: 'Read chapter 4 — stats notes', course: courses[0]?.id || null, priority: 'urgent', due: today, done: false },
+        { id: genId(), text: 'Essay draft: Cognitive Bias', course: courses[1]?.id || null, priority: 'normal', due: tomorrow, done: false },
+        { id: genId(), text: 'Review lecture slides', course: courses[2]?.id || null, priority: 'low', due: today, done: true },
+      ]
+      await supabase.from('tasks').insert(defaults)
+      tasks = defaults
+    }
+  } catch (e) {
+    console.error('Load error', e)
+    notify('Could not connect to database — check your .env config')
+  }
+  setSyncing(false)
+  renderAll()
+}
+
+// ---- REALTIME SUBSCRIPTION ----
+function subscribeRealtime() {
+  supabase.channel('bloom-sync')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, async () => {
+      const { data } = await supabase.from('tasks').select('*').order('created_at')
+      tasks = data || []
+      renderAll()
+      notify('✨ synced')
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, async () => {
+      const { data } = await supabase.from('courses').select('*').order('created_at')
+      courses = data || []
+      renderAll()
+    })
+    .subscribe()
+}
+
+// ---- ADD TASK ----
+window.addTask = async function() {
+  const text = document.getElementById('task-input').value.trim()
+  if (!text) return
+  const course = document.getElementById('task-course').value || null
+  const priority = document.getElementById('task-priority').value
+  const due = document.getElementById('task-due').value || fmtDate(new Date())
+  const btn = document.getElementById('add-btn')
+  btn.disabled = true
+  setSyncing(true)
+  const { error } = await supabase.from('tasks').insert({ id: genId(), text, course, priority, due, done: false })
+  setSyncing(false)
+  btn.disabled = false
+  if (!error) {
+    document.getElementById('task-input').value = ''
+    document.getElementById('task-due').value = fmtDate(new Date())
+    notify('Task added 🌸')
+  }
+}
+
+// ---- TOGGLE DONE ----
+window.toggleDone = async function(id) {
+  const t = tasks.find(t => t.id === id)
+  if (!t) return
+  setSyncing(true)
+  await supabase.from('tasks').update({ done: !t.done }).eq('id', id)
+  setSyncing(false)
+}
+
+// ---- DELETE TASK ----
+window.deleteTask = async function(id) {
+  setSyncing(true)
+  await supabase.from('tasks').delete().eq('id', id)
+  setSyncing(false)
+  notify('Task removed')
+}
+
+// ---- COURSES ----
+window.filterCourse = function(id) {
+  selectedCourse = id
+  renderAll()
+}
+
+window.openCourseModal = function() {
+  renderColorSwatches()
+  document.getElementById('course-name-input').value = ''
+  document.getElementById('course-modal').classList.add('open')
+}
+
+function renderColorSwatches() {
+  document.getElementById('color-swatches').innerHTML = COLORS.map((c, i) =>
+    `<div class="color-swatch ${selectedColor.bg===c.bg?'selected':''}"
+       style="background:${c.bg}" onclick="selectColor(${i})"></div>`
+  ).join('')
+}
+
+window.selectColor = function(i) {
+  selectedColor = COLORS[i]
+  renderColorSwatches()
+}
+
+window.addCourse = async function() {
+  const name = document.getElementById('course-name-input').value.trim()
+  if (!name) return
+  setSyncing(true)
+  await supabase.from('courses').insert({ id: genId(), name, color: selectedColor.bg })
+  setSyncing(false)
+  closeModal('course-modal')
+  notify('Course added 🎓')
+}
+
+// ---- RENDER ----
+function getCourse(id) { return courses.find(c => c.id === id) }
+
+function taskHTML(t, mini = false) {
+  const course = getCourse(t.course)
+  const today = fmtDate(new Date())
+  const isOverdue = t.due && t.due < today && !t.done
+  if (mini) {
+    const bg = course ? course.color : '#eee'
+    return `<div class="week-task-mini ${t.done?'done':''}" style="background:${bg}"
+      onclick="toggleDone('${t.id}')" title="${t.text}">${t.text}</div>`
+  }
+  return `
+    <div class="task-item ${t.priority} ${t.done?'done':''}">
+      <div class="task-check ${t.done?'checked':''}" onclick="toggleDone('${t.id}')">${t.done?'✓':''}</div>
+      <div class="task-body">
+        <div class="task-text">${t.text}</div>
+        <div class="task-meta">
+          ${course ? `<span class="course-tag" style="background:${course.color}">${course.name}</span>` : ''}
+          <span class="priority-tag">${t.priority==='urgent'?'🔴 urgent':t.priority==='low'?'🟢 low':'🔵 normal'}</span>
+          ${t.due ? `<span class="due-tag ${isOverdue?'overdue':''}">📅 ${isOverdue?'overdue: ':''}${formatDue(t.due)}</span>` : ''}
+        </div>
+      </div>
+      <div class="task-actions">
+        <button class="action-btn delete" onclick="deleteTask('${t.id}')">✕</button>
+      </div>
+    </div>`
+}
+
+function formatDue(s) {
+  const today = fmtDate(new Date())
+  const tomorrow = fmtDate(new Date(Date.now()+86400000))
+  if (s===today) return 'today'
+  if (s===tomorrow) return 'tomorrow'
+  return parseDate(s).toLocaleDateString('en-GB',{day:'numeric',month:'short'})
+}
+
+function renderCourses() {
+  const counts = {}
+  tasks.forEach(t => { if (!t.done) counts[t.course] = (counts[t.course]||0)+1 })
+  document.getElementById('course-list').innerHTML =
+    `<div class="course-item ${selectedCourse==='all'?'active':''}" onclick="filterCourse('all')">
+      <div class="course-dot" style="background:#bbb;"></div>
+      <span class="course-name">all tasks</span>
+      <span class="course-count">${tasks.filter(t=>!t.done).length}</span>
+    </div>` +
+    courses.map(c => `
+      <div class="course-item ${selectedCourse===c.id?'active':''}" onclick="filterCourse('${c.id}')">
+        <div class="course-dot" style="background:${c.color};"></div>
+        <span class="course-name">${c.name}</span>
+        <span class="course-count">${counts[c.id]||0}</span>
+      </div>`).join('')
+  document.getElementById('task-course').innerHTML =
+    `<option value="">no course</option>` +
+    courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('')
+}
+
+function renderStats() {
+  const today = fmtDate(new Date())
+  const ws = getWeekStart(new Date(), weekOffset)
+  const we = new Date(ws); we.setDate(we.getDate()+6)
+  document.getElementById('stat-urgent').textContent = tasks.filter(t=>t.priority==='urgent'&&!t.done).length
+  document.getElementById('stat-todo').textContent = tasks.filter(t=>!t.done).length
+  document.getElementById('stat-done').textContent = tasks.filter(t=>t.done&&t.due===today).length
+  document.getElementById('stat-week').textContent = tasks.filter(t=>t.due&&t.due>=fmtDate(ws)&&t.due<=fmtDate(we)).length
+}
+
+function renderDayView() {
+  const today = fmtDate(new Date())
+  let filtered = tasks.filter(t=>t.due===today)
+  if (selectedCourse !== 'all') filtered = filtered.filter(t=>t.course===selectedCourse)
+  filtered.sort((a,b)=>{
+    if (a.done!==b.done) return a.done?1:-1
+    return ({urgent:0,normal:1,low:2}[a.priority])-({urgent:0,normal:1,low:2}[b.priority])
+  })
+  const upcoming = tasks.filter(t=>t.due&&t.due>today&&!t.done&&(selectedCourse==='all'||t.course===selectedCourse))
+    .sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5)
+
+  const container = document.getElementById('day-tasks-container')
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="card empty-state"><div class="icon">🌷</div><p>no tasks for today — enjoy your free time!</p></div>`
+  } else {
+    const todo = filtered.filter(t=>!t.done), done = filtered.filter(t=>t.done)
+    container.innerHTML = `<div class="card">
+      <div class="day-header">
+        <div class="day-label">Today</div>
+        <div class="day-sub">${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</div>
+        <div class="task-count-badge">${filtered.length} tasks</div>
+      </div>
+      <div class="task-list">
+        ${todo.map(t=>taskHTML(t)).join('')}
+        ${done.length?`<div style="font-size:0.75rem;color:var(--text-lighter);margin:8px 0 4px;padding-left:4px;">completed ✓</div>`:''}
+        ${done.map(t=>taskHTML(t)).join('')}
+      </div></div>` +
+      (upcoming.length ? `<div class="card" style="margin-top:8px;">
+        <div class="card-title" style="font-size:0.9rem;margin-bottom:12px;">coming up 📅</div>
+        <div class="task-list">${upcoming.map(t=>taskHTML(t)).join('')}</div>
+      </div>` : '')
+  }
+}
+
+function getWeekStart(now, offset=0) {
+  const d = new Date(now)
+  const day = d.getDay()
+  d.setDate(d.getDate() + (day===0?-6:1-day) + offset*7)
+  d.setHours(0,0,0,0)
+  return d
+}
+
+function renderWeekView() {
+  const start = getWeekStart(new Date(), weekOffset)
+  const end = new Date(start); end.setDate(end.getDate()+6)
+  document.getElementById('week-range-label').textContent =
+    start.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' – ' +
+    end.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+  const today = fmtDate(new Date())
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+  document.getElementById('week-grid').innerHTML = Array.from({length:7},(_,i)=>{
+    const d = new Date(start); d.setDate(start.getDate()+i)
+    const ds = fmtDate(d)
+    let dt = tasks.filter(t=>t.due===ds)
+    if (selectedCourse!=='all') dt = dt.filter(t=>t.course===selectedCourse)
+    dt.sort((a,b)=>({urgent:0,normal:1,low:2}[a.priority])-({urgent:0,normal:1,low:2}[b.priority]))
+    return `<div class="week-col ${ds===today?'today-col':''}">
+      <div class="week-col-header">
+        <div class="week-day-name">${days[i]}</div>
+        <div class="week-day-num">${d.getDate()}</div>
+      </div>
+      ${dt.length?dt.map(t=>taskHTML(t,true)).join(''):`<div style="font-size:0.7rem;color:var(--text-lighter);text-align:center;margin-top:10px;">free 🌿</div>`}
+    </div>`
+  }).join('')
+}
+
+window.navWeek = function(dir) { weekOffset += dir; renderWeekView() }
+
+function renderMonthView() {
+  const y = monthViewDate.getFullYear(), m = monthViewDate.getMonth()
+  document.getElementById('month-label').textContent = monthViewDate.toLocaleDateString('en-GB',{month:'long',year:'numeric'})
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+  document.getElementById('month-cal-names').innerHTML = dayNames.map(d=>`<div class="month-day-name-big">${d}</div>`).join('')
+  const firstDay = new Date(y,m,1), lastDay = new Date(y,m+1,0)
+  const startOffset = firstDay.getDay()===0?6:firstDay.getDay()-1
+  const today = fmtDate(new Date())
+  let cells = ''
+  for (let i=startOffset-1;i>=0;i--) cells += mCell(new Date(y,m,-i), true)
+  for (let d=1;d<=lastDay.getDate();d++) cells += mCell(new Date(y,m,d), false)
+  const rem = (startOffset+lastDay.getDate())%7
+  for (let d=1;d<=(rem?7-rem:0);d++) cells += mCell(new Date(y,m+1,d), true)
+  document.getElementById('month-cal-grid').innerHTML = cells
+}
+
+function mCell(d, other) {
+  const ds = fmtDate(d), today = fmtDate(new Date())
+  let dt = tasks.filter(t=>t.due===ds)
+  if (selectedCourse!=='all') dt = dt.filter(t=>t.course===selectedCourse)
+  const vis = dt.slice(0,2), more = dt.length-2
+  return `<div class="month-cell ${ds===today?'today-cell':''} ${other?'other-month-cell':''}" onclick="jumpToDay('${ds}')">
+    <div class="month-cell-num">${d.getDate()}</div>
+    ${vis.map(t=>{const c=getCourse(t.course);return`<div class="month-task-dot ${t.done?'done':''}" style="background:${c?c.color:'#eee'}">${t.text}</div>`}).join('')}
+    ${more>0?`<div class="month-more">+${more} more</div>`:''}
+  </div>`
+}
+
+window.navMonth2 = function(dir) { monthViewDate.setMonth(monthViewDate.getMonth()+dir); renderMonthView() }
+
+function renderMiniCal() {
+  const y = calDisplayDate.getFullYear(), m = calDisplayDate.getMonth()
+  document.getElementById('cal-month-label').textContent = calDisplayDate.toLocaleDateString('en-GB',{month:'long',year:'numeric'})
+  const firstDay = new Date(y,m,1), lastDay = new Date(y,m+1,0)
+  const startOffset = firstDay.getDay()===0?6:firstDay.getDay()-1
+  const today = fmtDate(new Date())
+  const dayNames = ['M','T','W','T','F','S','S']
+  let html = dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join('')
+  for (let i=startOffset-1;i>=0;i--) {
+    const d = new Date(y,m,-i)
+    html += `<div class="cal-day other-month">${d.getDate()}</div>`
+  }
+  for (let d=1;d<=lastDay.getDate();d++) {
+    const dd = new Date(y,m,d), ds = fmtDate(dd)
+    const hasTasks = tasks.some(t=>t.due===ds&&!t.done)
+    html += `<div class="cal-day ${ds===today?'today':''} ${hasTasks?'has-tasks':''}" onclick="jumpToDay('${ds}')">${d}</div>`
+  }
+  document.getElementById('mini-cal').innerHTML = html
+}
+
+window.navMonth = function(dir) { calDisplayDate.setMonth(calDisplayDate.getMonth()+dir); renderMiniCal() }
+
+window.jumpToDay = function(ds) {
+  switchView('day', document.querySelector('.tab-btn'))
+  notify(`📅 ${formatDue(ds)}`)
+}
+
+window.switchView = function(view, btn) {
+  document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'))
+  document.getElementById('view-'+view).classList.add('active')
+  if (btn) btn.classList.add('active')
+  if (view==='week') renderWeekView()
+  if (view==='month') renderMonthView()
+  if (view==='day') renderDayView()
+}
+
+window.openShareModal = function() {
+  document.getElementById('share-link-text').innerHTML =
+    `${window.location.href}<button class="copy-link-btn" onclick="copyLink()">copy</button>`
+  document.getElementById('share-modal').classList.add('open')
+}
+
+window.copyLink = function() {
+  navigator.clipboard.writeText(window.location.href).catch(()=>{})
+  notify('Link copied! 📋')
+  closeModal('share-modal')
+}
+
+window.closeModal = function(id) { document.getElementById(id).classList.remove('open') }
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target===el) el.classList.remove('open') })
+})
+
+let notifTimer
+window.notify = function(msg) {
+  const el = document.getElementById('notif')
+  document.getElementById('notif-text').textContent = msg
+  el.classList.add('show')
+  clearTimeout(notifTimer)
+  notifTimer = setTimeout(()=>el.classList.remove('show'), 2500)
+}
+
+function renderAll() {
+  renderStats(); renderCourses(); renderMiniCal()
+  renderDayView(); renderWeekView(); renderMonthView()
+}
+
+function updateClock() {
+  const now = new Date()
+  document.getElementById('current-date-display').textContent = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})
+  document.getElementById('current-time-display').textContent = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
+}
+updateClock()
+setInterval(updateClock, 30000)
+document.getElementById('task-due').value = fmtDate(new Date())
+
+// PWA Install
+let deferredPrompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault()
+  deferredPrompt = e
+  document.getElementById('install-banner').classList.add('show')
+})
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt()
+    await deferredPrompt.userChoice
+    deferredPrompt = null
+    document.getElementById('install-banner').classList.remove('show')
+  }
+})
+
+// INIT
+loadAll()
+subscribeRealtime()
+</script>
+</body>
+</html>
