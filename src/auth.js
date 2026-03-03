@@ -96,27 +96,41 @@ function showAuthOverlay(onReady) {
   const overlay = document.getElementById('auth-overlay')
   overlay.classList.remove('hidden')
 
-  const loginView  = document.getElementById('auth-login-view')
-  const signupView = document.getElementById('auth-signup-view')
-  const errEl      = document.getElementById('auth-error')
-  const errEl2     = document.getElementById('auth-error-2')
+  const loginView   = document.getElementById('auth-login-view')
+  const signupView  = document.getElementById('auth-signup-view')
+  const confirmView = document.getElementById('auth-confirm-view')
+  const errEl       = document.getElementById('auth-error')
+  const errEl2      = document.getElementById('auth-error-2')
 
-  function hide(err = '') {
+  function hide() {
     overlay.classList.add('hidden')
-    if (err) return
+  }
+
+  function showLogin() {
+    loginView.style.display   = 'block'
+    signupView.style.display  = 'none'
+    confirmView.style.display = 'none'
+    errEl.textContent = ''
+  }
+
+  function showSignup() {
+    loginView.style.display   = 'none'
+    signupView.style.display  = 'block'
+    confirmView.style.display = 'none'
+    errEl2.textContent = ''
+  }
+
+  function showConfirm(email) {
+    loginView.style.display   = 'none'
+    signupView.style.display  = 'none'
+    confirmView.style.display = 'block'
+    document.getElementById('auth-confirm-email').textContent = email
   }
 
   // Toggle views
-  document.getElementById('goto-signup').addEventListener('click', () => {
-    loginView.style.display  = 'none'
-    signupView.style.display = 'block'
-    errEl2.textContent = ''
-  })
-  document.getElementById('goto-login').addEventListener('click', () => {
-    signupView.style.display = 'none'
-    loginView.style.display  = 'block'
-    errEl.textContent = ''
-  })
+  document.getElementById('goto-signup').addEventListener('click', showSignup)
+  document.getElementById('goto-login').addEventListener('click', showLogin)
+  document.getElementById('goto-login-2').addEventListener('click', showLogin)
 
   // Sign in
   document.getElementById('login-btn').addEventListener('click', async () => {
@@ -156,9 +170,8 @@ function showAuthOverlay(onReady) {
         hide()
         onReady(userId, false)
       } else {
-        // Email confirmation required
-        errEl2.textContent = '✅ check your email to confirm your account'
-        errEl2.style.color = 'var(--mint-deep)'
+        // Email confirmation required — show dedicated confirmation screen
+        showConfirm(email)
         document.getElementById('signup-btn').textContent = 'create account'
       }
     } catch(e) {
