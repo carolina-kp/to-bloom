@@ -8,6 +8,7 @@ export const S = {
   selectedCourse: 'all', taskView: 'day',
   budgetMonth: new Date(), selectedColor: '#f5c6c6',
   resCourse: 'all', resType: 'all', resRead: 'all',
+  wellCalMonth: new Date(),
 }
 
 // ── Toast ─────────────────────────────────────────────────────────
@@ -1292,6 +1293,10 @@ export function renderWellness() {
           <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--sky-deep)"></div>sleep</div>
         </div>
       </div>
+    </div>
+    <div class="wellness-card well-cal-card">
+      <div class="wellness-card-title">log history 📅</div>
+      ${buildWellCalendar()}
     </div>`
 
   // Mood
@@ -1331,6 +1336,72 @@ export function renderWellness() {
     } catch(e) { notify('Error: ' + e.message) }
     setSyncing(false)
   })
+
+  // Calendar navigation
+  document.getElementById('well-cal-prev').addEventListener('click', () => {
+    S.wellCalMonth = new Date(S.wellCalMonth.getFullYear(), S.wellCalMonth.getMonth() - 1, 1)
+    renderWellness()
+  })
+  document.getElementById('well-cal-next').addEventListener('click', () => {
+    S.wellCalMonth = new Date(S.wellCalMonth.getFullYear(), S.wellCalMonth.getMonth() + 1, 1)
+    renderWellness()
+  })
+
+  // Calendar cell clicks — open log detail
+  container.querySelectorAll('.well-cal-cell.has-log').forEach(el =>
+    el.addEventListener('click', () => showWellLog(el.dataset.wdate))
+  )
+}
+
+function buildWellCalendar() {
+  const y      = S.wellCalMonth.getFullYear()
+  const m      = S.wellCalMonth.getMonth()
+  const label  = S.wellCalMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  const today  = fmtDate(new Date())
+  const names  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+  const first  = new Date(y, m, 1)
+  const last   = new Date(y, m + 1, 0)
+  const offset = first.getDay() === 0 ? 6 : first.getDay() - 1
+
+  let cells = ''
+  for (let i = offset - 1; i >= 0; i--) cells += wcCell(new Date(y, m, -i), true, today)
+  for (let d = 1; d <= last.getDate(); d++) cells += wcCell(new Date(y, m, d), false, today)
+  const rem = (offset + last.getDate()) % 7
+  for (let d = 1; d <= (rem ? 7 - rem : 0); d++) cells += wcCell(new Date(y, m + 1, d), true, today)
+
+  return `
+    <div class="well-cal-header">
+      <button class="cal-nav" id="well-cal-prev">‹</button>
+      <span class="well-cal-label">${label}</span>
+      <button class="cal-nav" id="well-cal-next">›</button>
+    </div>
+    <div class="well-cal-day-names">${names.map(n => `<div class="well-cal-day-name">${n}</div>`).join('')}</div>
+    <div class="well-cal-grid">${cells}</div>
+    <p class="well-cal-hint">tap a highlighted day to view that log</p>`
+}
+
+function wcCell(d, other, today) {
+  const ds   = fmtDate(d)
+  const log  = S.wellness.find(l => l.date === ds)
+  const mood = log?.mood ? MOODS[log.mood - 1] : ''
+  return `<div class="well-cal-cell${other ? ' other-month' : ''}${ds === today ? ' today' : ''}${log ? ' has-log' : ''}" data-wdate="${ds}">
+    <div class="well-cal-num">${d.getDate()}</div>
+    ${mood ? `<div class="well-cal-mood">${mood}</div>` : log ? '<div class="well-cal-dot"></div>' : ''}
+  </div>`
+}
+
+function showWellLog(dateStr) {
+  const log = S.wellness.find(l => l.date === dateStr)
+  if (!log) return
+  const d     = parseDate(dateStr)
+  const label = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  document.getElementById('well-log-modal-title').textContent = label
+  const mood  = log.mood        != null ? `<div class="well-log-row"><span class="well-log-label">feeling</span><span class="well-log-val">${MOODS[log.mood - 1]}</span></div>` : ''
+  const sleep = log.sleep_hours != null ? `<div class="well-log-row"><span class="well-log-label">😴 sleep</span><span class="well-log-val">${log.sleep_hours} hrs</span></div>` : ''
+  const water = log.water_glasses ? `<div class="well-log-row"><span class="well-log-label">💧 water</span><span class="well-log-val">${log.water_glasses} glasses</span></div>` : ''
+  const notes = log.notes ? `<div class="well-log-row well-log-notes-row"><span class="well-log-label">notes</span><div class="well-log-note-text">${log.notes}</div></div>` : ''
+  document.getElementById('well-log-modal-body').innerHTML = `<div class="well-log-detail">${mood}${sleep}${water}${notes}</div>`
+  openModal('well-log-modal')
 }
 
 function buildLineChart(days) {

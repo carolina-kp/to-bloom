@@ -684,6 +684,34 @@ input,select,textarea { font-family:inherit; color:var(--text); }
 .chart-legend-item { display:flex; align-items:center; gap:5px; }
 .chart-legend-dot  { width:10px; height:3px; border-radius:2px; }
 
+/* Wellness calendar */
+.well-cal-card      { margin-top:16px; }
+.well-cal-header    { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.well-cal-label     { font-weight:500; font-size:.9rem; }
+.well-cal-day-names { display:grid; grid-template-columns:repeat(7,1fr); text-align:center; margin-bottom:4px; }
+.well-cal-day-name  { font-size:.68rem; font-weight:500; color:var(--text-lighter); text-transform:uppercase; padding:3px 0; }
+.well-cal-grid      { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.well-cal-cell      { border-radius:8px; padding:4px 2px; text-align:center; border:1.5px solid transparent;
+                      min-height:46px; display:flex; flex-direction:column; align-items:center;
+                      justify-content:flex-start; cursor:default; transition:background .15s; }
+.well-cal-cell.has-log   { cursor:pointer; background:var(--mint); }
+.well-cal-cell.has-log:hover { background:var(--mint-deep); }
+.well-cal-cell.today     { border-color:var(--pink-deep); }
+.well-cal-cell.other-month { opacity:.3; }
+.well-cal-num       { font-size:.7rem; color:var(--text-light); font-weight:500; line-height:1; margin-bottom:2px; }
+.well-cal-cell.today .well-cal-num { color:var(--pink-deep); font-weight:700; }
+.well-cal-mood      { font-size:1rem; line-height:1; }
+.well-cal-dot       { width:6px; height:6px; border-radius:50%; background:var(--mint-deep); margin-top:3px; }
+.well-cal-hint      { font-size:.72rem; color:var(--text-lighter); text-align:center; margin-top:8px; margin-bottom:0; }
+
+/* Wellness log detail modal */
+.well-log-detail    { display:flex; flex-direction:column; gap:12px; padding:4px 0 8px; }
+.well-log-row       { display:flex; align-items:center; gap:12px; }
+.well-log-label     { font-size:.78rem; color:var(--text-light); min-width:72px; }
+.well-log-val       { font-size:1.05rem; }
+.well-log-notes-row { align-items:flex-start; }
+.well-log-note-text { font-size:.88rem; color:var(--text); line-height:1.6; white-space:pre-wrap; }
+
 /* ── PROFILE ─────────────────────────────────────────────────────── */
 .profile-card { max-width:480px; }
 .profile-row  { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
