@@ -21,6 +21,27 @@
   --shadow-sm:      0 2px 8px rgba(61,53,48,.06);
   --nav-h:          56px;
   --radius:         16px;
+  --body-grad-1:    rgba(245,198,198,.25);
+  --body-grad-2:    rgba(216,198,232,.2);
+  --nav-bg:         rgba(253,248,242,.92);
+}
+
+/* ── OCEAN THEME ─────────────────────────────────────────────────── */
+[data-theme="ocean"] {
+  --cream:         #f2f6fd;
+  --pink:          #c6d8f5;
+  --pink-deep:     #7aaee8;
+  --mint:          #c6e8f5;
+  --mint-deep:     #6ec6e8;
+  --lavender:      #c6cef5;
+  --lavender-deep: #7a8ee8;
+  --peach:         #c6eaf5;
+  --peach-deep:    #6ab8d8;
+  --sky:           #dce8fb;
+  --sky-deep:      #5a9fd4;
+  --body-grad-1:   rgba(198,216,245,.3);
+  --body-grad-2:   rgba(198,206,245,.22);
+  --nav-bg:        rgba(242,246,253,.92);
 }
 *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior:smooth; }
@@ -31,8 +52,8 @@ body {
   min-height:100vh;
   padding-top:var(--nav-h);
   background-image:
-    radial-gradient(circle at 10% 20%,rgba(245,198,198,.25) 0%,transparent 50%),
-    radial-gradient(circle at 90% 80%,rgba(216,198,232,.2)  0%,transparent 50%);
+    radial-gradient(circle at 10% 20%,var(--body-grad-1) 0%,transparent 50%),
+    radial-gradient(circle at 90% 80%,var(--body-grad-2) 0%,transparent 50%);
 }
 a { color:inherit; text-decoration:none; }
 button { cursor:pointer; font-family:inherit; }
@@ -60,7 +81,7 @@ input,select,textarea { font-family:inherit; color:var(--text); }
 /* ── TOPBAR ─────────────────────────────────────────────────────── */
 #topbar {
   position:fixed; top:0; left:0; right:0; height:var(--nav-h);
-  background:rgba(253,248,242,.92); backdrop-filter:blur(12px);
+  background:var(--nav-bg); backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
   display:flex; align-items:center; justify-content:space-between;
   padding:0 20px; z-index:800; gap:12px;
@@ -87,6 +108,12 @@ input,select,textarea { font-family:inherit; color:var(--text); }
   display:flex; align-items:center; justify-content:center; font-size:.9rem; transition:background .15s;
 }
 .nav-profile:hover { background:var(--lavender-deep); }
+.theme-toggle {
+  background:var(--sky); border:none; border-radius:20px;
+  padding:4px 10px; font-size:.9rem; line-height:1;
+  transition:background .18s, transform .15s; flex-shrink:0;
+}
+.theme-toggle:hover { background:var(--sky-deep); transform:scale(1.08); }
 
 .hamburger {
   display:none; background:none; border:none; font-size:1.4rem;

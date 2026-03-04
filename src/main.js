@@ -13,6 +13,31 @@ import {
   initProfile, renderProfile,
 } from './pages.js'
 
+// ── Theme ─────────────────────────────────────────────────────────
+function setupTheme() {
+  const btn = document.getElementById('theme-toggle')
+  if (!btn) return
+
+  function apply(theme) {
+    if (theme === 'ocean') {
+      document.documentElement.setAttribute('data-theme', 'ocean')
+      btn.textContent = '🩵'
+    } else {
+      document.documentElement.removeAttribute('data-theme')
+      btn.textContent = '🌸'
+    }
+  }
+
+  // Sync button with whatever the inline script already set
+  apply(localStorage.getItem('bloom-theme') || 'rose')
+
+  btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'ocean' ? 'rose' : 'ocean'
+    localStorage.setItem('bloom-theme', next)
+    apply(next)
+  })
+}
+
 // ── Navigation ────────────────────────────────────────────────────
 const PAGES = ['home','timetable','grades','budget','resources','goals','wellness','profile']
 
@@ -202,6 +227,7 @@ function updateDateDisplay() {
 
 // ── Entry point ──────────────────────────────────────────────────
 async function main() {
+  setupTheme()
   setupNetworkStatus()
   setupInstall()
   setupModalCloseButtons()
