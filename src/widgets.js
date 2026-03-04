@@ -1,4 +1,4 @@
-import { fmtDate } from './db.js'
+import { fmtDate, parseDate } from './db.js'
 
 // ── QUOTES ───────────────────────────────────────────────────────
 const QUOTES = [
@@ -300,4 +300,78 @@ export function renderProgress(tasks) {
       streak: <strong>${streak} day${streak !== 1 ? 's' : ''} 🔥</strong>
     </div>
     <div class="progress-bars">${barsHtml}</div>`
+}
+
+// ── TASK SUMMARY WIDGET ───────────────────────────────────────────
+export function renderTasksWidget(tasks, courses, onToggle) {
+  const el = document.getElementById('tasks-widget-content')
+  if (!el) return
+
+  const todayStr    = fmtDate(new Date())
+  const tomorrowD   = new Date(); tomorrowD.setDate(tomorrowD.getDate() + 1)
+  const tomorrowStr = fmtDate(tomorrowD)
+
+  if (!tasks.length) {
+    el.innerHTML = `<div class="tasks-widget-empty">you're all caught up! 🌸</div>`
+    return
+  }
+
+  function fmtDue(ds) {
+    if (!ds) return ''
+    if (ds === todayStr)    return 'today'
+    if (ds === tomorrowStr) return 'tomorrow'
+    const d = parseDate(ds)
+    return d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })
+  }
+
+  function taskRow(t) {
+    const course = courses.find(c => c.id === t.course)
+    const pri    = t.priority === 'urgent' ? '🔴' : t.priority === 'low' ? '🟢' : '🔵'
+    return `<div class="tw-task${t.done ? ' tw-done' : ''}">
+      <div class="tw-check${t.done ? ' checked' : ''}" data-twcheck="${t.id}">${t.done ? '✓' : ''}</div>
+      <div class="tw-body">
+        <span class="tw-text">${t.text}</span>
+        <div class="tw-meta">
+          ${course ? `<span class="tw-tag" style="background:${course.color}">${course.name}</span>` : ''}
+          ${t.due  ? `<span class="tw-due">${fmtDue(t.due)}</span>` : ''}
+          <span class="tw-pri">${pri}</span>
+        </div>
+      </div>
+    </div>`
+  }
+
+  // Split: incomplete sorted by due date, complete sorted by due date
+  const incomplete = tasks.filter(t => !t.done)
+    .sort((a, b) => (a.due || '9999-99-99').localeCompare(b.due || '9999-99-99'))
+  const complete = tasks.filter(t => t.done)
+    .sort((a, b) => (a.due || '9999-99-99').localeCompare(b.due || '9999-99-99'))
+
+  const todayGroup    = incomplete.filter(t => !t.due || t.due <= todayStr)
+  const tomorrowGroup = incomplete.filter(t => t.due === tomorrowStr)
+  const upcomingGroup = incomplete.filter(t => t.due && t.due > tomorrowStr)
+
+  function group(label, list) {
+    if (!list.length) return ''
+    return `<div class="tw-group">
+      <div class="tw-group-label">📅 ${label}</div>
+      ${list.map(taskRow).join('')}
+    </div>`
+  }
+
+  let html = ''
+  html += group('Today',    todayGroup)
+  html += group('Tomorrow', tomorrowGroup)
+  html += group('Upcoming', upcomingGroup)
+  if (complete.length) {
+    html += `<div class="tw-group">
+      <div class="tw-group-label tw-done-label">✓ completed</div>
+      ${complete.map(taskRow).join('')}
+    </div>`
+  }
+
+  el.innerHTML = html
+
+  el.querySelectorAll('[data-twcheck]').forEach(btn =>
+    btn.addEventListener('click', () => onToggle(btn.dataset.twcheck))
+  )
 }

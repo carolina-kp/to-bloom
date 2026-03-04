@@ -464,6 +464,30 @@ input,select,textarea { font-family:inherit; color:var(--text); }
 .progress-bar.today-bar { background:var(--pink-deep); }
 .progress-bar-label { font-size:.62rem; color:var(--text-lighter); }
 
+/* ── TASK SUMMARY WIDGET ─────────────────────────────────────────── */
+.tw-widget { grid-column: 1 / -1; }
+.tasks-widget-scroll { max-height:300px; overflow-y:auto; padding-right:2px; }
+.tasks-widget-scroll::-webkit-scrollbar { width:4px; }
+.tasks-widget-scroll::-webkit-scrollbar-track { background:transparent; }
+.tasks-widget-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.tasks-widget-empty { font-size:.85rem; color:var(--text-lighter); text-align:center; padding:18px 0; }
+.tw-group { margin-bottom:10px; }
+.tw-group-label { font-size:.68rem; font-weight:600; color:var(--text-lighter); text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px; padding-bottom:3px; border-bottom:1px solid var(--border); }
+.tw-done-label { opacity:.6; }
+.tw-task { display:flex; align-items:flex-start; gap:8px; padding:5px 4px; border-radius:6px; transition:background .14s; }
+.tw-task:hover { background:var(--cream); }
+.tw-task.tw-done { opacity:.5; }
+.tw-task.tw-done .tw-text { text-decoration:line-through; color:var(--text-lighter); }
+.tw-check { width:15px; height:15px; border-radius:4px; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:.55rem; flex-shrink:0; cursor:pointer; margin-top:2px; transition:all .14s; }
+.tw-check:hover { border-color:var(--pink-deep); }
+.tw-check.checked { background:var(--pink-deep); border-color:var(--pink-deep); color:white; }
+.tw-body { flex:1; min-width:0; }
+.tw-text { font-size:.84rem; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tw-meta { display:flex; align-items:center; gap:5px; margin-top:2px; flex-wrap:wrap; }
+.tw-tag  { font-size:.66rem; padding:1px 6px; border-radius:8px; font-weight:500; }
+.tw-due  { font-size:.68rem; color:var(--text-lighter); }
+.tw-pri  { font-size:.68rem; }
+
 /* ── TIMETABLE ───────────────────────────────────────────────────── */
 .timetable-wrap { overflow-x:auto; }
 .timetable-grid {

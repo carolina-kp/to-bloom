@@ -1,9 +1,9 @@
 import { db, subscribeAll } from './db.js'
 import { initAuth, signOut, currentUser, isGuest } from './auth.js'
-import { initQuote, initWeather, initPomodoro, renderProgress, updatePomoSettings, getPomoSettings } from './widgets.js'
+import { initQuote, initWeather, initPomodoro, renderProgress, renderTasksWidget, updatePomoSettings, getPomoSettings } from './widgets.js'
 import {
   S, notify, setSyncing, openModal, closeModal,
-  initHome, renderHome, renderCourseList,
+  initHome, renderHome, renderCourseList, toggleDone,
   initTimetable, renderTimetable,
   initGrades, renderGrades,
   initBudget, renderBudget, loadBudgetMonth,
@@ -76,6 +76,11 @@ async function loadAll() {
   }
 }
 
+async function handleWidgetToggle(id) {
+  await toggleDone(id)
+  renderTasksWidget(S.tasks, S.courses, handleWidgetToggle)
+}
+
 function renderAll() {
   renderHome()
   renderCourseList()
@@ -86,6 +91,7 @@ function renderAll() {
   renderGoals()
   renderWellness()
   renderProgress(S.tasks)
+  renderTasksWidget(S.tasks, S.courses, handleWidgetToggle)
 }
 
 // ── Realtime ─────────────────────────────────────────────────────
