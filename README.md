@@ -89,7 +89,8 @@ Click the install icon in the address bar, or look for the Install banner
 
 ## 🛠 Stack
 
-- **Frontend**: Vanilla JS + Vite
+- **Frontend**: React + Vite
 - **Database + Realtime**: Supabase (Postgres + WebSockets)
+- **Styling**: Tailwind CSS
 - **Hosting**: Vercel
 - **PWA**: vite-plugin-pwa (offline caching, installable)
